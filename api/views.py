@@ -43,6 +43,27 @@ class StationViewSet(viewsets.ViewSet):
         serializer = StationSerializer(station)
         return Response(serializer.data)
 
+    @action(detail=True, methods=['get'])
+    def queue(self, request, pk=None):
+        """Получить очередь для конкретного стенда"""
+        station = get_object_or_404(GameStation, id=pk)
+
+        # Получаем очередь для стенда
+        queue_data = QueueService.get_queue_for_station(pk)
+
+        # Получаем текущего играющего
+        current_player = queue_data[0]['participant_name'] if queue_data else None
+
+        response_data = {
+            'station_id': station.id,
+            'station_name': station.name,
+            'total_in_queue': len(queue_data),
+            'current_player': current_player,
+            'queue': queue_data
+        }
+
+        serializer = StationQueueSerializer(response_data)
+        return Response(serializer.data)
 
 class QueueViewSet(viewsets.ViewSet):
     def create(self, request):
@@ -120,6 +141,36 @@ class QueueViewSet(viewsets.ViewSet):
         status_info = StatusService.get_station_status(station)
         serializer = StationStatusSerializer(status_info)
 
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def station_queue(self, request):
+        """Получить всех людей в очереди для стенда"""
+        station_id = request.GET.get('station_id')
+
+        if not station_id:
+            return Response(
+                {'error': 'station_id обязателен'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        station = get_object_or_404(GameStation, id=station_id)
+
+        # Получаем очередь для стенда
+        queue_data = QueueService.get_queue_for_station(station_id)
+
+        # Получаем текущего играющего (первого в очереди)
+        current_player = queue_data[0]['participant_name'] if queue_data else None
+
+        response_data = {
+            'station_id': station.id,
+            'station_name': station.name,
+            'total_in_queue': len(queue_data),
+            'current_player': current_player,
+            'queue': queue_data
+        }
+
+        serializer = StationQueueSerializer(response_data)
         return Response(serializer.data)
 
 

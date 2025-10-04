@@ -86,6 +86,37 @@ class QueueService:
             next_player = waiting_entries[1] if len(waiting_entries) > 1 else None
             return current_player, next_player
 
+    @staticmethod
+    def get_queue_for_station(station_id):
+        """Получить всех людей в очереди для указанного стенда"""
+        queue_entries = QueueEntry.objects.filter(
+            station_id=station_id,
+            status='waiting'
+        ).select_related('participant').order_by('joined_at')
+
+        queue_data = []
+        for index, entry in enumerate(queue_entries, 1):
+            queue_data.append({
+                'position': index,
+                'participant_id': entry.participant.id,
+                'participant_name': entry.participant.name,
+                'device_id': entry.participant.device_id,
+                'joined_at': entry.joined_at,
+                'estimated_wait_minutes': QueueService._calculate_wait_time(entry, index)
+            })
+
+        return queue_data
+
+    @staticmethod
+    def _calculate_wait_time(queue_entry, position):
+        """Рассчитать время ожидания для позиции в очереди"""
+        if position == 1:
+            return 0  # Первый в очереди
+
+        station = queue_entry.station
+        # Расчет времени ожидания: (позиция - 1) * длительность игры
+        return (position - 1) * station.game_duration // 60
+
 
 class StatusService:
     @staticmethod

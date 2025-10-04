@@ -52,3 +52,20 @@ class SkipPlayerResponseSerializer(serializers.Serializer):
     message = serializers.CharField()
     skipped_player = ParticipantSerializer(allow_null=True)
     next_player = ParticipantSerializer(allow_null=True)
+
+
+class QueueParticipantSerializer(serializers.Serializer):
+    position = serializers.IntegerField()
+    participant_id = serializers.IntegerField()
+    participant_name = serializers.CharField()
+    device_id = serializers.CharField()
+    joined_at = serializers.DateTimeField()
+    estimated_wait_minutes = serializers.IntegerField()
+
+
+class StationQueueSerializer(serializers.Serializer):
+    station_id = serializers.IntegerField()
+    station_name = serializers.CharField()
+    total_in_queue = serializers.IntegerField()
+    current_player = serializers.CharField(allow_null=True)
+    queue = QueueParticipantSerializer(many=True)
