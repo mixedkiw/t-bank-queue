@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,23 @@ SECRET_KEY = 'django-insecure-hhkj$j4)%v5ahc6xt5i-gzn7^&--bldu$pzkcfk(d4p6btqgk9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '0.0.0.0',
+    '.serveo.net',
+    '.pagekite.me',
+    '.loclx.io',
+    '.lhr.life'
+]
+
+# CSRF настройки для туннелей
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.serveo.net',
+    'https://*.pagekite.me',
+    'https://*.loclx.io',
+    'https://*.lhr.life'
+]
 
 ROOT_URLCONF = 'queue_system.urls'
 # Application definition
@@ -136,8 +153,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Для работы за прокси
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True

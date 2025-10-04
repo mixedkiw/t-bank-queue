@@ -7,6 +7,10 @@ services:
     command: >
       sh -c "python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,.serveo.net,.pagekite.me,.loclx.io,0.0.0.0
+      - CSRF_TRUSTED_ORIGINS=https://*.serveo.net https://*.pagekite.me
     volumes:
       - .:/app
       - static_volume:/app/static
