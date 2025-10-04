@@ -7,5 +7,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     
     # API routes
-    path('api/', include('api.urls')),  # URLs вашего приложения с очередью
+    path('api/', include('api.urls')),
 ]

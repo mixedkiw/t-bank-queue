@@ -9,5 +9,5 @@ router.register(r'queue', views.QueueViewSet, basename='queue')
 router.register(r'admin', views.AdminViewSet, basename='admin')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 ]
