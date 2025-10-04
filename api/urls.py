@@ -6,7 +6,7 @@ router = DefaultRouter()
 router.register(r'participants', views.ParticipantViewSet, basename='participants')
 router.register(r'stations', views.StationViewSet, basename='stations')
 router.register(r'queue', views.QueueViewSet, basename='queue')
-router.register(r'organizer', views.OrganizerViewSet, basename='organizer')
+router.register(r'admin', views.AdminViewSet, basename='admin')
 
 urlpatterns = [
     path('api/', include(router.urls)),

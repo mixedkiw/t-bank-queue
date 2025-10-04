@@ -11,7 +11,7 @@ class ParticipantSerializer(serializers.ModelSerializer):
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = GameStation
-        fields = ['id', 'name', 'description', 'game_duration', 'qr_code']
+        fields = ['id', 'name', 'description', 'qr_code', 'game_duration']
 
 
 class QueueEntrySerializer(serializers.ModelSerializer):
@@ -20,8 +20,7 @@ class QueueEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QueueEntry
-        fields = ['id', 'station_name', 'participant_name', 'status', 'position',
-                  'estimated_wait_time', 'joined_at', 'started_at']
+        fields = ['id', 'station_name', 'participant_name', 'status', 'joined_at', 'started_at']
 
 
 class ParticipantStatusSerializer(serializers.Serializer):
@@ -31,12 +30,25 @@ class ParticipantStatusSerializer(serializers.Serializer):
     estimated_wait_minutes = serializers.IntegerField()
     people_ahead = serializers.IntegerField()
     is_playing = serializers.BooleanField()
-    is_next = serializers.BooleanField()
+    is_ready_to_play = serializers.BooleanField()
+    current_player_exists = serializers.BooleanField()
 
 
 class StationStatusSerializer(serializers.Serializer):
     station = StationSerializer()
     current_player = ParticipantSerializer(allow_null=True)
+    next_player = ParticipantSerializer(allow_null=True)
     waiting_count = serializers.IntegerField()
-    waiting_queue = QueueEntrySerializer(many=True)
-    is_available = serializers.BooleanField()
+    is_occupied = serializers.BooleanField()
+
+
+class StartGameResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    previous_player = ParticipantSerializer(allow_null=True)
+    next_player = ParticipantSerializer(allow_null=True)
+
+
+class SkipPlayerResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    skipped_player = ParticipantSerializer(allow_null=True)
+    next_player = ParticipantSerializer(allow_null=True)

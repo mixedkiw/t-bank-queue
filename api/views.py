@@ -76,7 +76,7 @@ class QueueViewSet(viewsets.ViewSet):
                             status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
-    def start_playing(self, request):
+    def start_game(self, request):
         """Начать игру (сканирование QR)"""
         device_id = request.data.get('device_id')
         station_id = request.data.get('station_id')
@@ -84,33 +84,21 @@ class QueueViewSet(viewsets.ViewSet):
         participant = get_object_or_404(Participant, device_id=device_id)
         station = get_object_or_404(GameStation, id=station_id, is_active=True)
 
-        queue_entry = QueueService.start_playing(station, participant)
+        previous_player, next_player = QueueService.start_game(station, participant)
 
-        if queue_entry:
-            serializer = QueueEntrySerializer(queue_entry)
+        if previous_player:
+            response_data = {
+                'message': 'Игра начата',
+                'previous_player': previous_player.participant,
+                'next_player': next_player.participant if next_player else None
+            }
+            serializer = StartGameResponseSerializer(response_data)
             return Response(serializer.data)
         else:
             return Response(
-                {'error': 'Невозможно начать игру. Убедитесь, что вы первый в очереди и стенд свободен.'},
+                {'error': 'Вы не первый в очереди'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-    @action(detail=False, methods=['post'])
-    def complete_playing(self, request):
-        """Завершить игру"""
-        device_id = request.data.get('device_id')
-        station_id = request.data.get('station_id')
-
-        participant = get_object_or_404(Participant, device_id=device_id)
-        station = get_object_or_404(GameStation, id=station_id)
-
-        result = QueueService.complete_playing(station, participant)
-
-        if result:
-            return Response({'message': 'Игра завершена'})
-        else:
-            return Response({'error': 'Вы не играете на этом стенде'},
-                            status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'])
     def my_status(self, request):
@@ -123,17 +111,39 @@ class QueueViewSet(viewsets.ViewSet):
 
         return Response(serializer.data)
 
-
-class OrganizerViewSet(viewsets.ViewSet):
-    """API для организаторов (опционально)"""
-
     @action(detail=False, methods=['get'])
     def station_status(self, request):
-        """Получить статус стенда по QR"""
-        qr_code = request.GET.get('qr_code')
-        station = get_object_or_404(GameStation, qr_code=qr_code)
+        """Получить статус стенда"""
+        station_id = request.GET.get('station_id')
+        station = get_object_or_404(GameStation, id=station_id)
 
         status_info = StatusService.get_station_status(station)
         serializer = StationStatusSerializer(status_info)
 
         return Response(serializer.data)
+
+
+class AdminViewSet(viewsets.ViewSet):
+    """API для организаторов"""
+
+    @action(detail=False, methods=['post'])
+    def skip_player(self, request):
+        """Пропустить текущего игрока"""
+        station_id = request.data.get('station_id')
+        station = get_object_or_404(GameStation, id=station_id)
+
+        skipped_player, next_player = QueueService.skip_current_player(station)
+
+        if skipped_player:
+            response_data = {
+                'message': 'Текущий игрок пропущен',
+                'skipped_player': skipped_player.participant,
+                'next_player': next_player.participant if next_player else None
+            }
+            serializer = SkipPlayerResponseSerializer(response_data)
+            return Response(serializer.data)
+        else:
+            return Response(
+                {'error': 'Нет игроков в очереди'},
+                status=status.HTTP_400_BAD_REQUEST
+            )

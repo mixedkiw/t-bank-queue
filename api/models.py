@@ -25,7 +25,6 @@ class Participant(models.Model):
 class QueueEntry(models.Model):
     STATUS_CHOICES = [
         ('waiting', 'В ожидании'),
-        ('playing', 'Играет'),
         ('completed', 'Завершено'),
         ('cancelled', 'Отменено'),
     ]
@@ -34,13 +33,11 @@ class QueueEntry(models.Model):
     participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='waiting')
     joined_at = models.DateTimeField(auto_now_add=True)
-    position = models.IntegerField(default=0)
-    estimated_wait_time = models.IntegerField(default=0)
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        ordering = ['position']
+        ordering = ['joined_at']
 
     def __str__(self):
         return f"{self.participant.name} - {self.station.name}"

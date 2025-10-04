@@ -1,5 +1,5 @@
 from django.utils import timezone
-from django.db import transaction, models
+from django.db import transaction
 from .models import *
 
 
@@ -11,93 +11,47 @@ class QueueService:
             existing = QueueEntry.objects.filter(
                 station=station,
                 participant=participant,
-                status__in=['waiting', 'playing']
+                status='waiting'
             ).first()
 
             if existing:
                 return existing
 
-            # Определяем позицию в очереди
-            last_position = QueueEntry.objects.filter(
-                station=station,
-                status='waiting'
-            ).aggregate(models.Max('position'))['position__max'] or 0
-
-            new_position = last_position + 1
-
-            # Расчет времени ожидания
-            current_players = QueueEntry.objects.filter(
-                station=station,
-                status='playing'
-            ).count()
-
-            if current_players == 0:
-                wait_time = (new_position - 1) * station.game_duration
-            else:
-                wait_time = new_position * station.game_duration
-
+            # Создаем запись в очереди
             queue_entry = QueueEntry.objects.create(
                 station=station,
-                participant=participant,
-                position=new_position,
-                estimated_wait_time=wait_time
+                participant=participant
             )
 
             return queue_entry
 
     @staticmethod
-    def start_playing(station, participant):
+    def start_game(station, participant):
         with transaction.atomic():
-            # Проверяем, что участник первый в очереди и стенд свободен
-            queue_entry = QueueEntry.objects.filter(
+            # Получаем актуальную очередь
+            waiting_entries = QueueEntry.objects.filter(
                 station=station,
-                participant=participant,
-                status='waiting',
-                position=1
-            ).first()
+                status='waiting'
+            ).order_by('joined_at')
 
-            if not queue_entry:
-                return None
+            if not waiting_entries:
+                return None, None
 
-            # Проверяем, что стенд свободен
-            current_players = QueueEntry.objects.filter(
-                station=station,
-                status='playing'
-            ).count()
+            current_player = waiting_entries.first()
 
-            if current_players > 0:
-                return None
+            # Проверяем, что участник первый в очереди
+            if current_player.participant != participant:
+                return None, None
 
-            # Начинаем игру
-            queue_entry.status = 'playing'
-            queue_entry.started_at = timezone.now()
-            queue_entry.estimated_wait_time = 0
-            queue_entry.save()
+            # Завершаем игру текущего участника
+            current_player.status = 'completed'
+            current_player.completed_at = timezone.now()
+            current_player.save()
 
-            # Пересчитываем очередь для остальных
-            QueueService._recalculate_waiting_times(station)
+            # Получаем следующего игрока (если есть)
+            next_player = waiting_entries[1] if len(waiting_entries) > 1 else None
 
-            return queue_entry
-
-    @staticmethod
-    def complete_playing(station, participant):
-        with transaction.atomic():
-            queue_entry = QueueEntry.objects.filter(
-                station=station,
-                participant=participant,
-                status='playing'
-            ).first()
-
-            if queue_entry:
-                queue_entry.status = 'completed'
-                queue_entry.completed_at = timezone.now()
-                queue_entry.save()
-
-                # Пересчитываем очередь
-                QueueService._recalculate_waiting_times(station)
-
-                return queue_entry
-            return None
+            return current_player, next_player
 
     @staticmethod
     def leave_queue(station, participant):
@@ -109,107 +63,106 @@ class QueueService:
             ).first()
 
             if queue_entry:
-                old_position = queue_entry.position
                 queue_entry.status = 'cancelled'
                 queue_entry.save()
-
-                # Пересчитываем только тех, кто был после ушедшего
-                QueueService._recalculate_queue_after_position(station, old_position)
-
                 return queue_entry
             return None
 
     @staticmethod
-    def _recalculate_queue_after_position(station, from_position):
-        """Пересчитать позиции участников после указанной позиции"""
+    def skip_current_player(station):
         with transaction.atomic():
-            # Находим участников, которые были после ушедшего
-            entries_after = QueueEntry.objects.filter(
+            waiting_entries = QueueEntry.objects.filter(
                 station=station,
-                status='waiting',
-                position__gt=from_position
-            ).order_by('position')
+                status='waiting'
+            ).order_by('joined_at')
 
-            # Сдвигаем позиции
-            for index, entry in enumerate(entries_after, start=from_position):
-                entry.position = index
-                entry.save()
+            if not waiting_entries:
+                return None, None
 
-            # Пересчитываем время ожидания для всех ожидающих
-            QueueService._recalculate_waiting_times(station)
+            current_player = waiting_entries.first()
+            current_player.status = 'cancelled'
+            current_player.save()
 
-    @staticmethod
-    def _recalculate_waiting_times(station):
-        """Пересчитать время ожидания для всех в очереди"""
-        waiting_entries = QueueEntry.objects.filter(
-            station=station,
-            status='waiting'
-        ).order_by('position')
-
-        current_players = QueueEntry.objects.filter(
-            station=station,
-            status='playing'
-        ).count()
-
-        for entry in waiting_entries:
-            if current_players == 0:
-                wait_time = (entry.position - 1) * station.game_duration
-            else:
-                wait_time = entry.position * station.game_duration
-
-            entry.estimated_wait_time = wait_time
-            entry.save()
+            next_player = waiting_entries[1] if len(waiting_entries) > 1 else None
+            return current_player, next_player
 
 
 class StatusService:
-    @staticmethod
-    def get_station_status(station):
-        """Получить полный статус стенда"""
-        current_player = QueueEntry.objects.filter(
-            station=station,
-            status='playing'
-        ).first()
-
-        waiting_entries = QueueEntry.objects.filter(
-            station=station,
-            status='waiting'
-        ).order_by('position')
-
-        waiting_count = waiting_entries.count()
-
-        return {
-            'station': station,
-            'current_player': current_player.participant if current_player else None,
-            'waiting_count': waiting_count,
-            'waiting_queue': waiting_entries,
-            'is_available': current_player is None,
-        }
-
     @staticmethod
     def get_participant_status(participant):
         """Получить статус участника во всех очередях"""
         queue_entries = QueueEntry.objects.filter(
             participant=participant,
-            status__in=['waiting', 'playing']
+            status='waiting'
         ).select_related('station')
 
         result = []
         for entry in queue_entries:
-            # Количество людей перед участником
-            people_ahead = entry.position - 1 if entry.status == 'waiting' else 0
-            is_next = entry.position == 1 and entry.status == 'waiting'
-
-            status_info = {
-                'queue_entry': entry,
-                'station': entry.station,
-                'position': entry.position,
-                'status': entry.status,
-                'estimated_wait_minutes': entry.estimated_wait_time // 60,
-                'people_ahead': people_ahead,
-                'is_playing': entry.status == 'playing',
-                'is_next': is_next
-            }
-
+            status_info = StatusService._calculate_queue_status(entry)
             result.append(status_info)
 
         return result
+
+    @staticmethod
+    def get_station_status(station):
+        """Получить статус стенда"""
+        waiting_entries = QueueEntry.objects.filter(
+            station=station,
+            status='waiting'
+        ).order_by('joined_at')
+
+        current_player = waiting_entries.first() if waiting_entries else None
+        waiting_count = waiting_entries.count()
+
+        return {
+            'station': station,
+            'current_player': current_player.participant if current_player else None,
+            'next_player': waiting_entries[1].participant if len(waiting_entries) > 1 else None,
+            'waiting_count': waiting_count,
+            'is_occupied': current_player is not None,
+        }
+
+    @staticmethod
+    def _calculate_queue_status(queue_entry):
+        """Рассчитать статус для конкретной записи в очереди"""
+        station = queue_entry.station
+        waiting_entries = QueueEntry.objects.filter(
+            station=station,
+            status='waiting'
+        ).order_by('joined_at')
+
+        # Находим позицию участника
+        position = None
+        for index, entry in enumerate(waiting_entries, 1):
+            if entry.id == queue_entry.id:
+                position = index
+                break
+
+        if position is None:
+            return None
+
+        current_player = waiting_entries.first()
+        is_current_player = current_player and current_player.id == queue_entry.id
+        is_ready_to_play = position == 1
+        current_player_exists = current_player is not None
+
+        # Расчет времени ожидания
+        if position == 1:
+            estimated_wait_minutes = 0
+        elif position == 2 and not current_player_exists:
+            estimated_wait_minutes = 0
+        else:
+            games_ahead = position - 1 if current_player_exists else position - 2
+            estimated_wait_minutes = max(0, games_ahead * station.game_duration // 60)
+
+        return {
+            'queue_entry': queue_entry,
+            'station': station,
+            'position': position,
+            'status': queue_entry.status,
+            'estimated_wait_minutes': estimated_wait_minutes,
+            'people_ahead': position - 1,
+            'is_playing': is_current_player,
+            'is_ready_to_play': is_ready_to_play,
+            'current_player_exists': current_player_exists
+        }
