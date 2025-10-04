@@ -6,9 +6,6 @@ echo "=== Запуск Docker Compose ==="
 docker-compose down
 docker-compose up -d --build
 
-echo "=== Ожидание запуска сервисов ==="
-sleep 15
-
 
 echo "=== Создание туннеля с автоподтверждением ==="
 SUBDOMAIN="django-$(date +%Y%m%d)"
