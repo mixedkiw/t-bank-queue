@@ -1,0 +1,33 @@
+{
+	"name": "client-web-application",
+	"version": "1.0.0",
+	"description": "web application on React for T-bank",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "webpack-dev-server --mode development --open"
+	},
+	"author": "Konstantin",
+	"license": "ISC",
+	"dependencies": {
+		"@babel/core": "^7.28.4",
+		"@babel/preset-env": "^7.28.3",
+		"@babel/preset-react": "^7.27.1",
+		"babel-loader": "^10.0.0",
+		"css-loader": "^7.1.2",
+		"html-webpack-plugin": "^5.6.4",
+		"normalize.css": "^8.0.1",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"react-router-dom": "^7.9.3",
+		"style-loader": "^4.0.0",
+		"uuid": "^13.0.0",
+		"webpack": "^5.102.0",
+		"webpack-cli": "^6.0.1",
+		"webpack-dev-server": "^5.2.2"
+	},
+	"devDependencies": {
+		"file-loader": "^6.2.0",
+		"image-webpack-loader": "^8.1.0"
+	}
+}

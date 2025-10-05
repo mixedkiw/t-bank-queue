@@ -1,0 +1,29 @@
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+#root {
+	position: relative;
+	height: 100%;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	font-family: 'Tinkoff Sans', sans-serif;
+	line-height: 1.5;
+	color: #000;
+	background-color: #fff;
+	display: flex;
+	flex-direction: column;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
