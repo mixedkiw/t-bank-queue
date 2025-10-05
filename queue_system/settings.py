@@ -37,12 +37,12 @@ ALLOWED_HOSTS = [
 ]
 
 # CSRF настройки для туннелей
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.serveo.net',
-    'https://*.pagekite.me',
-    'https://*.loclx.io',
-    'https://*.lhr.life'
-]
+# CSRF_TRUSTED_ORIGINS = [
+#     'https://*.serveo.net',
+#     'https://*.pagekite.me',
+#     'https://*.loclx.io',
+#     'https://*.lhr.life'
+# ]
 
 ROOT_URLCONF = 'queue_system.urls'
 # Application definition
