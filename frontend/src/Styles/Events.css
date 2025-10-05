@@ -1,0 +1,128 @@
+.events {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: calc(100vh - 200px);
+}
+
+.events__inner {
+    background: #fff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.events h1 {
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 2.5em;
+}
+
+.events__subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 1.2em;
+}
+
+.events-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.event-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #ffdd2d;
+    border-radius: 12px;
+    padding: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(255, 221, 45, 0.3);
+}
+
+.event-card h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+}
+
+.event-description {
+    color: #666;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.event-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    font-size: 0.9em;
+}
+
+.duration, .qr-code {
+    background: #fff;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #e6e6e6;
+}
+
+.btn-join {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #ffdd2d;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+}
+
+.btn-join:hover {
+    background-color: #ffd700;
+}
+
+.loading, .error, .no-stations {
+    text-align: center;
+    padding: 40px;
+    font-size: 1.2em;
+}
+
+.error {
+    color: #dc3545;
+}
+
+.no-stations {
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .events {
+        padding: 10px;
+    }
+
+    .events__inner {
+        padding: 20px;
+    }
+
+    .events-list {
+        grid-template-columns: 1fr;
+    }
+
+    .event-info {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

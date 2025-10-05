@@ -1,18 +1,17 @@
-import React, { useState, useRef } from 'react'
+import React from 'react'
+import MySlots from './MySlots.js'
 import '../Styles/Main.css'
 
-function Main() {
-	return (
-		<React.Fragment>
-			<nav className='select'>
-				<ul className='select__list'>
-					<li></li>
-					<li></li>
-					<li></li>
-				</ul>
-			</nav>
-		</React.Fragment>
-	)
+function Main({ userData }) {
+    return (
+        <div className="main-content">
+            <div className="welcome-section">
+                <h1>Добро пожаловать, {userData?.name}!</h1>
+                <p>Здесь вы можете управлять своими очередями на станциях</p>
+            </div>
+            <MySlots userData={userData} />
+        </div>
+    )
 }
 
 export default Main

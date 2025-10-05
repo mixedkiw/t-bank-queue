@@ -1,15 +1,13 @@
-import { API_BASE_URL } from '../config.js'
+import api from './index.js'
 
-async function getEvent(params) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/stations/`)
-
-		if (!response.ok) {
-			throw new Error('Ошибка')
-		}
-		const data = await response.json()
-		return data
-	} catch (error) {}
+async function getStations() {
+    try {
+        const data = await api.getStations()
+        return data
+    } catch (error) {
+        console.error('Get stations error:', error)
+        throw error
+    }
 }
 
-export default getEvent
+export default getStations

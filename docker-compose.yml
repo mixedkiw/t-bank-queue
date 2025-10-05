@@ -23,6 +23,27 @@ services:
     networks:
       - network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.frontend
+    container_name: react_frontend
+    command: >
+      sh -c "npm install && npm start"
+    environment:
+      - REACT_APP_API_URL=http://web:8000/api
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - network
+
   db:
     image: postgres:15
     container_name: postgres_db

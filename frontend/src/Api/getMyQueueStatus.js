@@ -1,15 +1,13 @@
-import { API_BASE_URL } from '../config.js'
+import api from './index.js'
 
-async function getMyQueueStatus() {
-	try {
-		const response = await fetch(API_BASE_URL)
-
-		if (!response.ok) {
-			throw new Error('Ошибка')
-		}
-		const data = await response.json()
-		return data
-	} catch (error) {}
+async function getMyQueueStatus(deviceId) {
+    try {
+        const data = await api.getMyQueueStatus(deviceId)
+        return data
+    } catch (error) {
+        console.error('Get queue status error:', error)
+        throw error
+    }
 }
 
 export default getMyQueueStatus

@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копируем package.json отдельно для кэширования
+COPY package*.json ./
+
+# Устанавливаем зависимости
+RUN npm install
+
+# Копируем исходный код
+COPY . .
+
+# Открываем порт для разработки
+EXPOSE 3000
+
+# Команда для запуска (переопределяется в docker-compose)
+CMD ["npm", "start"]

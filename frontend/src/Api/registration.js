@@ -1,21 +1,13 @@
-import { API_BASE_URL } from '../config.js'
+import api from './index.js'
 
 async function registration(data) {
-	try {
-		const response = await fetch(`${API_BASE_URL}/participants/`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(data),
-		})
-
-		if (!response.ok) {
-			throw new Error('Ошибка')
-		}
-		const responseData = await response.json()
-		return responseData
-	} catch (error) {}
+    try {
+        const responseData = await api.registerUser(data)
+        return responseData
+    } catch (error) {
+        console.error('Registration error:', error)
+        throw error
+    }
 }
 
 export default registration
