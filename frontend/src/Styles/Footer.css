@@ -1,0 +1,27 @@
+.footer {
+	background-color: #f9f9f9;
+	border-top: 1px solid #e6e6e6;
+	height: 55px;
+	box-sizing: border-box;
+	padding: 20px 0px;
+	position: sticky;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+}
+
+@media (max-width: 480px) {
+	.registration-form-section {
+		padding: 15px;
+	}
+
+	.registration-form-section h1 {
+		font-size: 1.4em;
+	}
+	.footer__text {
+		font-size: 0.75em;
+		color: #555;
+	}
+}

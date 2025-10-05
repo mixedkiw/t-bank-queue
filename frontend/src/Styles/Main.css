@@ -1,0 +1,20 @@
+.main {
+	padding: 10px;
+	min-height: calc(100vh - 55px);
+}
+
+.select {
+	max-width: 490px;
+	width: 100%;
+	background-color: black;
+}
+
+.select__list li {
+	list-style-type: none;
+}
+
+@media (width < 480px) {
+	.main {
+		font-size: 0.8em;
+	}
+}
